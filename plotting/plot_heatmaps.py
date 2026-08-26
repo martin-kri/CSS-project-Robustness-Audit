@@ -27,7 +27,7 @@ evaluations = [
         "target_col": "p(accept)",
         "title_suffix": "First-Token Log-Probabilities",
         "cbar_label": "Probability of Acceptance [ p(accept) ]",
-        "output_file": "graphs/Ultimatum_Game_Heatmap_LOGPROBS.pdf",
+        "output_file": "plots/Ultimatum_Game_Heatmap_LOGPROBS.pdf",
     },
     {
         "type": "TEXT",
@@ -35,7 +35,7 @@ evaluations = [
         "target_col": "choice",
         "title_suffix": "Text Generation (Temperature 1.0)",
         "cbar_label": "Acceptance Rate",
-        "output_file": "graphs/Ultimatum_Game_Heatmap_TEXT.pdf",
+        "output_file": "plots/Ultimatum_Game_Heatmap_TEXT.pdf",
     },
 ]
 
@@ -154,7 +154,7 @@ for eval_config in evaluations:
     )
 
     plt.tight_layout()
-    os.makedirs("graphs", exist_ok=True)
+    os.makedirs("plots", exist_ok=True)
     plt.savefig(eval_config["output_file"], dpi=300, bbox_inches="tight")
     plt.close()
 

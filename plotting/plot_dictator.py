@@ -81,6 +81,6 @@ plt.tight_layout(rect=[0, 0, 1, 0.94])
 sns.despine()
 
 # Save the plot
-os.makedirs("graphs", exist_ok=True)
-plt.savefig("graphs/dictator_allocations.pdf", dpi=300, bbox_inches='tight')
-print("Graph saved successfully as 'graphs/dictator_allocations.pdf'")
+os.makedirs("plots", exist_ok=True)
+plt.savefig("plots/dictator_allocations.pdf", dpi=300, bbox_inches='tight')
+print("Graph saved successfully as 'plots/dictator_allocations.pdf'")

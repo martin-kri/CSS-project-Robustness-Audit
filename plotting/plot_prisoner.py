@@ -91,6 +91,6 @@ for i, model in enumerate(models):
 
 plt.tight_layout(rect=[0, 0, 1, 0.94])
 sns.despine()
-os.makedirs("graphs", exist_ok=True)
-plt.savefig("graphs/Prisoners_Dilemma_Strategies.pdf", dpi=300, bbox_inches='tight')
-print("Graph saved successfully as 'graphs/Prisoners_Dilemma_Strategies.pdf'\n")
+os.makedirs("plots", exist_ok=True)
+plt.savefig("plots/Prisoners_Dilemma_Strategies.pdf", dpi=300, bbox_inches='tight')
+print("Graph saved successfully as 'plots/Prisoners_Dilemma_Strategies.pdf'\n")
