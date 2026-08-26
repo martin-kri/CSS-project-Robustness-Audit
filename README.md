@@ -9,15 +9,15 @@ GitHub repository for the project of Computational Social Science 2025/2026 cour
 - `paper-checks/` — not part of the pipeline; each script sources one specific claim in the text
 - `dictator_game-data/`, `prisoners_game-data/`, `ultimatum_game-data/`, `plots/` — shared data and output folders, read/written by scripts in every folder above
 
-**Run every script from this top-level folder** (e.g. `python games/dictator_game.py`, not `cd games && python dictator_game.py`). All file paths inside the scripts are relative to this folder, not to the script's own location, since the data and output folders are shared across `games/`, `analysis/`, `plotting/`, and `paper-checks/`.
+Run every script from this top-level folder, e.g. `python games/dictator_game.py`. All file paths inside the scripts are relative to this folder, not to the script's own location, since the data and output folders are shared across `games/`, `analysis/`, `plotting/`, and `paper-checks/`.
 
 ## Setup
 
-Python 3.10 or later, with the packages listed in `requirements.txt`:
+Python 3.10, with the packages listed in `requirements.txt`:
 ```
 pip install -r requirements.txt
 ```
-`torch` is pinned to the CUDA 12.4 build used on the server these sweeps ran on. If your machine has a different CUDA version (or no GPU), install `torch` separately for your setup before installing the rest.
+Python 3.10 specifically — the pinned CUDA 12.4 build of `torch` and the rest of the stack in `requirements.txt` were set up against it, and later Python versions haven't been tested. If your machine has a different CUDA version (or no GPU), install `torch` separately for your setup before installing the rest.
 
 You will also need a Hugging Face access token with permission for the two gated models:
 - https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct
