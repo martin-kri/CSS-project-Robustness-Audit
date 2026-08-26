@@ -1,27 +1,55 @@
 # CSS-project-Robustness-Audit
 GitHub repository for the project of Computational Social Science 2025/2026 course at the University of Trento
 
+## Setup
 
-For running the python scripts I have used Python 3.10.12 with libraries as in the requirements.txt
-You will also need an access token from [huggingface.co](https://huggingface.co) and permission to access the models from: https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct & https://huggingface.co/google/gemma-3-4b-it
+Python 3.10 or later, with the packages listed in `requirements.txt`:
+```
+pip install -r requirements.txt
+```
+`torch` is pinned to the CUDA 12.4 build used on the server these sweeps ran on. If your machine has a different CUDA version (or no GPU), install `torch` separately for your setup before installing the rest.
 
-## For the Dictator Game:
+You will also need a Hugging Face access token with permission for the two gated models:
+- https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct
+- https://huggingface.co/google/gemma-3-4b-it
 
-at line 13 in the script `dictator_game.py` You will need to replace `YOUR_TOKEN_FROM_HUGGINGFACE` with Your access token from huggingface. Then, the script can be run with one model at a time. To run the second model: `gemma-3-4b-it`, You need to comment line 16 and uncomment line 17. For generating the visualization run `plot_dictator.py`
+Create a `.env` file in this folder with:
+```
+HF_TOKEN=your_token_here
+```
 
+All three generation sweeps (Dictator Game, Prisoner's Dilemma, Ultimatum Game) run one model at a time: near the top of each script, comment out the `model_id` line for Llama and uncomment the one for Gemma, then run it again. Every generation script skips a condition if its output CSV already exists, so re-running only fills in what's missing. These sweeps ran on GPU (a single V100 for everything except the Ultimatum log-probability sweep, which used an L40S); expect the full set to take hours, not minutes.
 
-## For the Prisoner's Dilemma:
+## Pipeline (run these to reproduce the results)
 
-at line 15 in the script `prisoners_dilemma.py` You will need to replace `YOUR_TOKEN_FROM_HUGGINGFACE` with Your access token from huggingface. Then, the script can be run with one model at a time. To run the second model: `gemma-3-4b-it`, You need to comment line 18 and uncomment line 19. For generating the visualization run `plot_prisoner.py`
+### Dictator Game
+1. `dictator_game.py` — 3 prompt conditions x 500 iterations, per model, into `dictator_game-data/`
+2. `analysis_dictator.py` — the statistics reported in Results: parser audit, means and distribution shape, perturbation tests, comparison to Engel (2011)
+3. `plot_dictator.py` — builds `graphs/dictator_allocations.pdf` (Figure 1)
 
+### Prisoner's Dilemma
+1. `prisoners_dilemma.py` — 3 prompt conditions x 21 payoff matrices x 50 iterations, per model, into `prisoners_game-data/`
+2. `analysis_prisoner.py` — cooperation rates, perturbation effects, and the payoff-structure regression against Mengel (2018) / Brookins & DeBacker (2024)
+3. `plot_prisoner.py` — builds `graphs/Prisoners_Dilemma_Strategies.pdf` (Figure 2)
 
-## For the Ultimatum Game:
+### Ultimatum Game
+1. `create_dataset.py` — builds `ultimatum_game-data/experiment_pairs.csv`, 10,000 name pairs from the surname list used in Aher et al. (2023), fixed seed
+2. `ultimatum_game-text_generation.py` and `ultimatum_game-logprobs.py` — both read `experiment_pairs.csv`; run each once per model into `ultimatum_game-data/`
+3. `analysis_ultimatum.py` — the two-instrument comparison (H2), offer-sensitivity, and name-sensitivity checks
+4. `plot_heatmaps.py` — builds `graphs/Ultimatum_Game_Heatmap_LOGPROBS.pdf` and `graphs/Ultimatum_Game_Heatmap_TEXT.pdf` (Figures 3-4)
 
-first, `create_dataset.py` needs to be run to create `experiment_pairs.csv`, to get the name pairs that Aher et al. used in their 2023 research paper. Then both `ultimatum_game-logprobs.py` and `ultimatum_game-text_generation.py` can be run. 
+`stats_helpers.py` holds the statistical functions shared by the three `analysis_*.py` scripts and is not run on its own.
 
-For `ultimatum_game-logprobs.py`: at line 15 in the script You will need to replace `YOUR_TOKEN_FROM_HUGGINGFACE` with Your access token from huggingface. Then, the script can be run with one model at a time. To run the second model: `gemma-3-4b-it`, You need to comment line 17 and uncomment line 18.
+## Used only to pull specific numbers cited in the text
 
-For `ultimatum_game-text_generation.py`: at line 15 in the script You will need to replace `YOUR_TOKEN_FROM_HUGGINGFACE` with Your access token from huggingface. Then, the script can be run with one model at a time. To run the second model: `gemma-3-4b-it`, You need to comment line 18 and uncomment line 19.
+These aren't part of the pipeline above and don't need to be run to reproduce the headline results. Each one was used to check or source a specific claim made in the paper.
 
-Then for generating the heatmaps, `plot_heatmaps.py` needs to be run.
-For additional information about probabilities, `probability_extraction_ult-game.py` can be run, this was used for getting more accurate numbers while writing the project's text.
+- `Brookins-DeBacker_gpt-mean.py` — computes the 4.83€ GPT-3.5 mean allocation from `gpt_dictator_results.csv`, used as the reference line in `plot_dictator.py`.
+- `discards-prisoners_dillema.py` — confirms that every Prisoner's Dilemma payoff matrix reached its 50-response target on the first pass, with no resampling (Analytical Approach).
+- `ulti_gemma-empty.py` — checks Gemma's text-generation responses under float16 for empty or malformed output (Analytical Approach).
+- `ulti-logprobs-analysis.py` — prints the mean validity rate (z_coverage) per model and condition; the basis for the log-probability validity numbers reported in Analytical Approach and for excluding Gemma's baseline and order-swap log-probability cells as instrument failure.
+
+## Data & output folders
+
+- `dictator_game-data/`, `prisoners_game-data/`, `ultimatum_game-data/` — raw response CSVs, one file per model/condition (Prisoner's Dilemma: per payoff matrix; Ultimatum: per offer)
+- `graphs/` — the four PDF figures embedded in the paper; the three plotting scripts save directly into this folder (created automatically if it doesn't exist)
