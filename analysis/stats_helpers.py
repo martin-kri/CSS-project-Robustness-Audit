@@ -86,12 +86,12 @@ def holm(tests, title):
 
 def bootstrap_mean_ci(x, n_boot=10000, alpha=0.05, seed=42):
     """Confidence interval for a mean, by resampling the data."""
+    rng = np.random.default_rng(seed)
     x = np.asarray(x, float)
     if len(x) == 0:
         return np.nan, np.nan, np.nan
     if np.allclose(x, x[0]):        # every value identical: no uncertainty to show
         return x.mean(), x[0], x[0]
-    rng = np.random.default_rng(seed)
     draws = rng.choice(x, size=(n_boot, len(x)), replace=True).mean(axis=1)
     return (x.mean(),
             np.percentile(draws, 100 * alpha / 2),
@@ -100,11 +100,11 @@ def bootstrap_mean_ci(x, n_boot=10000, alpha=0.05, seed=42):
 
 def perm_test_means(x, y, n_perm=20000, seed=42):
     """Permutation test for a difference in means. Returns (difference, p-value)."""
+    rng = np.random.default_rng(seed)
     x, y = np.asarray(x, float), np.asarray(y, float)
     obs = x.mean() - y.mean()
     pool = np.concatenate([x, y])
     nx, count = len(x), 0
-    rng = np.random.default_rng(seed)
     for _ in range(n_perm):
         rng.shuffle(pool)
         if abs(pool[:nx].mean() - pool[nx:].mean()) >= abs(obs) - 1e-12:
