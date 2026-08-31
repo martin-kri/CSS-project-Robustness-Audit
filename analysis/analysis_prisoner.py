@@ -118,9 +118,6 @@ def main():
     # 3b. Headline: does the perturbation hit the two models differently?
     #     Difference of the per-matrix deltas, with a bootstrap CI. A regression
     #     isn't usable here since baseline cooperation has zero variance.
-    #     Result: Output Format Change moves Llama 8.19 points more than Gemma
-    #     (95% CI [3.90, 12.86]); Order Swap moves Gemma 45.52 points more than
-    #     Llama (95% CI [-61.05, -29.90]). Both intervals exclude zero.
     print("\n" + "=" * 70)
     print("3b. HEADLINE: DOES THE PERTURBATION HIT THE MODELS DIFFERENTLY?")
     print("=" * 70)
