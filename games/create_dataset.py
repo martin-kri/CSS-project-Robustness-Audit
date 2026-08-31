@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import random
 
@@ -103,6 +104,7 @@ for prop_race, prop_list in SURNAMES.items():
 random.shuffle(pairs)
 
 # Save to a master CSV
+os.makedirs("ultimatum_game-data", exist_ok=True)
 df = pd.DataFrame(pairs)
 df.to_csv("ultimatum_game-data/experiment_pairs.csv", index=False)
 print(f"Saved {len(df)} pairs to experiment_pairs.csv!")

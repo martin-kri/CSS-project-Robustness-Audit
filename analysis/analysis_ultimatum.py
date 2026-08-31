@@ -98,6 +98,8 @@ def main():
     print("=" * 70)
     family = []
     for (mm, c), g in m.groupby(["model", "prompt_type"]):
+        if (mm, c) in invalid_cells:
+            continue
         print(f"\n  {mm} {c}")
         for col, label in [("hard_rate", "vs thresholded probability"),
                            ("mean_p", "vs averaged probability")]:

@@ -69,7 +69,7 @@ for i, model in enumerate(models):
         else:
             ax.set_ylabel("")
 
-        ax.set_xlabel("Offer Amount (€)", fontsize=11)
+        ax.set_xlabel("Amount transferred to recipient (€)", fontsize=11)
         ax.set_xticks(range(11))
 
         # Strict Probability Y-Axis Formatting

@@ -129,6 +129,8 @@ def get_terminators(pipeline):
 
 
 # ── Main Logic ──────────────────────────────────────────────────────────
+os.makedirs("prisoners_game-data", exist_ok=True)
+
 terminators = get_terminators(pipeline)
 total_combinations = len(TEMPERATURES) * len(PAYOFFS) * len(PROMPT_TYPES)
 current_combo = 0

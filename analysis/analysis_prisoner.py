@@ -73,6 +73,9 @@ def main():
     print("=" * 70)
     for (m, c), g in d.groupby(["model", "prompt_type"]):
         print("  " + rate_line(f"{m} {c}", g.cooperate.sum(), len(g)))
+        per_matrix = g.groupby("mkey").cooperate.mean()
+        _, blo, bhi = bootstrap_mean_ci(per_matrix.values)
+        print(f"    clustered over {len(per_matrix)} matrices, bootstrap CI [{blo:.2%}, {bhi:.2%}]")
     print("\n  Human benchmark (Mengel 2018, one-shot): 37%")
     print("  GPT-3.5 benchmark (Brookins & DeBacker):  65%")
 

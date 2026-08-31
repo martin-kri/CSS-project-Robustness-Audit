@@ -40,7 +40,7 @@ All four generation sweeps (Dictator Game, Prisoner's Dilemma, Ultimatum Game te
 ### Prisoner's Dilemma
 1. `games/prisoners_dilemma.py` — 3 prompt conditions x 21 payoff matrices x 50 iterations, per model, into `prisoners_game-data/`
 2. `analysis/analysis_prisoner.py` — cooperation rates, perturbation effects, and the payoff-structure regression against Mengel (2018) / Brookins & DeBacker (2024)
-3. `plotting/plot_prisoner.py` — builds `plots/Prisoners_Dilemma_Strategies.pdf` (Figure 2)
+3. `plotting/plot_prisoner.py` — builds `plots/Prisoners_Dilemma_Risk_Scatter.pdf` (Figure 2): cooperation rate per matrix vs. RISK, for the Output Format Change and Order Swap conditions, against Mengel's (2018) human regression slope. Baseline is shown as a flat reference line, since cooperation there is 100% on every matrix.
 
 ### Ultimatum Game
 1. `games/create_dataset.py` — builds `ultimatum_game-data/experiment_pairs.csv`, 10,000 name pairs from the surname list used in Aher et al. (2023), fixed seed
@@ -54,8 +54,8 @@ All four generation sweeps (Dictator Game, Prisoner's Dilemma, Ultimatum Game te
 
 These aren't part of the pipeline above and don't need to be run to reproduce the headline results. Each one was used to check or source a specific claim made in the paper.
 
-- `Brookins-DeBacker_gpt-mean.py` — computes the 4.83€ GPT-3.5 mean allocation from `gpt_dictator_results.csv`, used as the reference line in `plotting/plot_dictator.py`.
-- `discards-prisoners_dillema.py` — confirms that every Prisoner's Dilemma payoff matrix reached its 50-response target on the first pass, with no resampling (Analytical Approach).
+- `Brookins-DeBacker_gpt-mean.py` — computes the 4.83€ GPT-3.5 mean allocation from `gpt_dictator_results.csv`, available at: https://github.com/jdebacker/BrookinsDeBacker_GPT/blob/main/data/gpt_dictator_results.csv, used as the reference line in `plotting/plot_dictator.py`.
+- `discards-prisoners_dilemma.py` — confirms that every Prisoner's Dilemma payoff matrix reached its 50-response target on the first pass, with no resampling (Analytical Approach).
 - `ulti_gemma-empty.py` — checks Gemma's text-generation responses under float16 for empty or malformed output (Analytical Approach).
 - `ulti-logprobs-analysis.py` — prints the mean validity rate (z_coverage) per model and condition; the basis for the log-probability validity numbers reported in Analytical Approach and for excluding Gemma's baseline and order-swap log-probability cells as instrument failure.
 

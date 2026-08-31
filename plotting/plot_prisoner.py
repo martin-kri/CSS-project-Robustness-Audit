@@ -8,8 +8,8 @@ import os
 models = ["Llama_3.1_8B_Instruct", "gemma_3_4b_it"] 
 model_titles = ["Llama 3.1 (8B)", "Gemma 3 (4B)"]
 
-prompts = ["baseline", "change_output_format", "change_order_swap"]
-prompt_titles = ["Baseline", "Output Format Change", "Order Swap"]
+prompts = ["change_output_format", "change_order_swap"]
+prompt_titles = ["Output Format Change", "Order Swap"]
 
 # Mengel (2018) Payoffs. Mengel's own listing repeats (250, 50, 750, 150);
 # dropped here as a duplicate, same 21 unique matrices as prisoners_dilemma.py.
@@ -37,6 +37,7 @@ for model in models:
                 df = pd.read_csv(file_path)
                 df['model'] = model
                 df['prompt_type'] = prompt
+                df['a'], df['b'], df['c'], df['d'] = a, b, c, d
                 all_data.append(df)
 
 if not all_data:
@@ -46,51 +47,65 @@ full_df = pd.concat(all_data, ignore_index=True)
 
 # Map "a" to Cooperate and "b" to Defect
 full_df["Strategy"] = full_df["choice"].map({"a": "Cooperate", "b": "Defect"})
-
 full_df["Cooperate_Indicator"] = np.where(full_df["Strategy"] == "Cooperate", 1, 0)
 
-# ── Plotting: Frequency of Strategies ────────────────────────────────────
+# RISK, same definition as analysis_prisoner.py: (d - b) / d
+full_df["RISK"] = (full_df["d"] - full_df["b"]) / full_df["d"]
+
+# Collapse to one cooperation rate per (model, prompt, matrix), matching
+# the aggregation level `cell` uses in analysis_prisoner.py, one point per
+# matrix, not one point per raw draw.
+cell = (
+    full_df.groupby(["model", "prompt_type", "a", "b", "c", "d", "RISK"])
+    ["Cooperate_Indicator"].mean()
+    .reset_index()
+    .rename(columns={"Cooperate_Indicator": "coop"})
+)
+
+# ── Plotting: cooperation vs. RISK, one panel per model ─────────────────
 sns.set_theme(style="ticks")
-fig, axes = plt.subplots(nrows=2, ncols=3, figsize=(15, 10), sharex=True, sharey=True)
+fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(13, 5.5), sharex=True, sharey=True)
+
+condition_style = {
+    "change_output_format": {"color": "#d62728", "marker": "s", "label": "Output Format Change", "offset": 0.0},
+    "change_order_swap": {"color": "#2ca02c", "marker": "^", "label": "Order Swap", "offset": 0.012},
+}
+
+rng = np.random.RandomState(42)
+
+# Mengel (2018) human regression line: Cooperate = 0.455 - 0.269 * RISK,
+# her reported constant and RISK coefficient from Table 1. Holds temptation
+# and efficiency at whatever level is implicit in her own regression, this
+# is a reference line for the slope, not a claim that it predicts this data.
+risk_range = np.linspace(0, 1, 100)
+mengel_line = 0.455 - 0.269 * risk_range
 
 for i, model in enumerate(models):
-    for j, prompt in enumerate(prompts):
-        ax = axes[i, j]
-        subset = full_df[(full_df['model'] == model) & (full_df['prompt_type'] == prompt)]
-        
-        if not subset.empty:
-            # Calculate probabilities
-            counts = subset['Strategy'].value_counts(normalize=True).reindex(["Cooperate", "Defect"], fill_value=0)
-            
-            sns.barplot(
-                x=counts.index, 
-                y=counts.values, 
-                hue=counts.index,
-                legend=False,
-                ax=ax, 
-                palette=["#2ca02c", "#d62728"], # Green for Coop, Red for Defect
-                edgecolor="black",
-                alpha=0.8
-            )
-            
-            # Annotate overall cooperation rate
-            coop_rate = counts.get("Cooperate", 0)
-            ax.text(0.5, 0.9, f"Cooperation Rate: {coop_rate:.1%}", 
-                    transform=ax.transAxes, ha='center', va='top', 
-                    fontsize=11, fontweight='bold', bbox=dict(facecolor='white', alpha=0.8))
-            
-        if i == 0:
-            ax.set_title(prompt_titles[j], fontsize=13, fontweight='bold')
-        if j == 0:
-            ax.set_ylabel(f"{model_titles[i]}\nProbability", fontsize=12, fontweight='bold')
-        else:
-            ax.set_ylabel("")
-            
-        ax.set_xlabel("")
-        ax.set_ylim(0, 1.05)
+    ax = axes[i]
+    for prompt in prompts:
+        style = condition_style[prompt]
+        subset = cell[(cell["model"] == model) & (cell["prompt_type"] == prompt)]
+        jitter = rng.uniform(-0.006, 0.006, size=len(subset))
+        ax.scatter(
+            subset["RISK"] + style["offset"] + jitter, subset["coop"],
+            color=style["color"], marker=style["marker"], label=style["label"],
+            s=60, alpha=0.75, edgecolor="black", linewidth=0.5, zorder=3,
+        )
 
-plt.tight_layout(rect=[0, 0, 1, 0.94])
+    ax.axhline(1.0, color="#1f77b4", linewidth=2.5, label="Baseline (100% on every matrix)", zorder=2)
+    ax.plot(risk_range, mengel_line, color="gray", linestyle="--", linewidth=1.5,
+             label="Mengel (2018) human slope", zorder=2)
+
+    ax.set_title(model_titles[i], fontsize=13, fontweight="bold")
+    ax.set_xlabel("RISK = (d − b) / d", fontsize=11)
+    ax.set_ylim(-0.05, 1.05)
+    ax.set_xlim(-0.05, 1.0)
+
+axes[0].set_ylabel("Cooperation Rate (per matrix)", fontsize=12, fontweight="bold")
+axes[1].legend(loc="lower left", fontsize=9, framealpha=0.9)
+
+plt.tight_layout()
 sns.despine()
 os.makedirs("plots", exist_ok=True)
-plt.savefig("plots/Prisoners_Dilemma_Strategies.pdf", dpi=300, bbox_inches='tight')
-print("Graph saved successfully as 'plots/Prisoners_Dilemma_Strategies.pdf'\n")
+plt.savefig("plots/Prisoners_Dilemma_Risk_Scatter.pdf", dpi=300, bbox_inches="tight")
+print("Graph saved successfully as 'plots/Prisoners_Dilemma_Risk_Scatter.pdf'\n")

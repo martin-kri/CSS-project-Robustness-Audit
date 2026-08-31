@@ -100,8 +100,6 @@ total = len(combinations)
 
 print(f"Running LOGPROBS sweep over {len(name_pairs)} name pairs...")
 
-os.makedirs("ultimatum_game-data", exist_ok=True)
-
 for idx, (offer, p_type) in enumerate(combinations, 1):
     output_name = model_id.split("/")[-1].replace("-", "_")
     file_path = f"ultimatum_game-data/Ultimatum_game_LOGPROBS_{output_name}_{p_type}_offer{offer}.csv"

@@ -110,6 +110,8 @@ def get_terminators(pipeline):
     return [t for t in raw if t is not None and t != pipeline.tokenizer.unk_token_id]
 
 # ── Main Logic ──────────────────────────────────────────────────────────
+os.makedirs("dictator_game-data", exist_ok=True)
+
 def run_temperature(temp, prompt_name, prompt_text, terminators):
     output_name = model_id.split("/")[-1].replace("-", "_")
     file_path = f"dictator_game-data/Dictator_game_{output_name}_{prompt_name}_temp{temp}.csv"
